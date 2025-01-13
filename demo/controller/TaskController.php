@@ -53,10 +53,26 @@ class TaskController
         $this->taskService->delete($taskId);
         header('Location: /');
     }
-    public function done(int $taskId)
+    public function done(int $taskId): void
     {
-        $this->taskService->checkedTaskDone($taskId);
-        header('Location: /');
+        if ($taskId <= 0) {
+            throw new \InvalidArgumentException('ID de tâche invalide');
+        }
+
+        try {
+            $success = $this->taskService->checkedTaskDone($taskId);
+
+            header('Content-Type: application/json');
+            echo json_encode(['success' => $success], JSON_THROW_ON_ERROR);
+            exit;
+        } catch (\Exception $e) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], JSON_THROW_ON_ERROR);
+            exit;
+        }
     }
     public function doneList()
     {
@@ -69,4 +85,32 @@ class TaskController
         require 'view/task.php';
     }
 
+
+    public function verifieStatusTaskById(int $taskId): string
+    {
+        try {
+            $json = file_get_contents('php://input');
+            $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+
+            if ($data === null) {
+                throw new \RuntimeException('Invalid JSON data');
+            }
+
+            $status = $this->taskService->verifieStatusTaskById($taskId);
+
+            header('Content-Type: application/json');
+            echo json_encode(['status' => $status], JSON_THROW_ON_ERROR);
+            exit;
+
+        }
+        catch (\Exception $e) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], JSON_THROW_ON_ERROR);
+            exit;
+        }
+
+    }
 }
