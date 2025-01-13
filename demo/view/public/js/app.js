@@ -1,136 +1,133 @@
-let task = document.getElementById('task');
-let addTask = document.getElementById('addTask');
-let taskitem = document.querySelectorAll('.task-item');
-let message=document.querySelector('.message');
-addTask.addEventListener('click', function() {
-    let taskValue = task.value;
-    saveTask(taskValue);
-})
+const selectors = {
+    task: document.getElementById('task'),
+    addTask: document.getElementById('addTask'),
+    taskItems: document.querySelectorAll('.task-item'),
+    message: document.querySelector('.message'),
+    filterButtons: document.querySelectorAll('.activity-table-status button')
+};
 
+const messages = {
+    taskDeleted: 'Tâche supprimée',
+    taskCompleted: (description) => `Tâche ${description} terminée`,
+    taskAlreadyDone: (description) => `Tâche ${description} déjà terminée`,
+    deleteConfirm: 'Voulez-vous vraiment supprimer cette tâche ?'
+};
 
-function saveTask(taskValue) {
-    if (taskValue) {
-        fetch('/MWD/demo/index.php?page=store', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({description: taskValue})
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                if (data.success) {
-                    window.location.reload();
-                }
-            });
+const messageStyles = {
+    base: {
+        display: 'block',
+        color: 'white',
+        fontWeight: 'bold',
+        padding: '10px',
+        margin: '10px',
+        borderRadius: '10px',
+        textAlign: 'center',
+        width: '50%'
+    },
+    success: {
+        backgroundColor: '#357ABD',
+        border: '1px solid #4A90E2'
+    },
+    error: {
+        backgroundColor: '#bd3549',
+        border: '1px solid #ffffff'
     }
-}
+};
 
-taskitem.forEach(function(item) {
-    item.addEventListener('click', function() {
-        spanContent = item.querySelector('span').textContent;
-        checkTaskDone(item.getAttribute('data-id'), spanContent);
-    });
+const api = {
+    async request(endpoint, data) {
+        try {
+            const response = await fetch(`/MWD/demo/index.php?page=${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Erreur API:', error);
+            throw error;
+        }
+    }
+};
 
-    item.addEventListener('dblclick', function() {
-        confirm('Voulez-vous vraiment supprimer cette tache ?') ? deleteTask(item.getAttribute('data-id')) : null;
-    });
+const messageManager = {
+    show(text, type = 'success') {
+        Object.assign(selectors.message.style, messageStyles.base,
+            type === 'success' ? messageStyles.success : messageStyles.error);
+        selectors.message.textContent = text;
+    }
+};
 
+const taskManager = {
+    async save(description) {
+        if (!description.trim()) return;
+
+        const data = await api.request('store', { description });
+        if (data.success) window.location.reload();
+    },
+
+    async delete(id) {
+        if (!confirm(messages.deleteConfirm)) return;
+
+        const data = await api.request('delete', { id: parseInt(id, 10) });
+        if (data.success) {
+            messageManager.show(messages.taskDeleted, 'error');
+            window.location.reload();
+        }
+    },
+
+    async toggleStatus(id, description) {
+        const statusData = await api.request('status', { id: parseInt(id, 10) });
+
+        if (statusData.status === 'DONE') {
+            messageManager.show(messages.taskAlreadyDone(description));
+            return;
+        }
+
+        const data = await api.request('done', { id: parseInt(id, 10) });
+        if (data.success) {
+            messageManager.show(messages.taskCompleted(description));
+            window.location.reload();
+        }
+    }
+};
+
+selectors.addTask.addEventListener('click', () =>
+    taskManager.save(selectors.task.value));
+
+selectors.task.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') taskManager.save(selectors.task.value);
 });
 
-function deleteTask(taskId) {
-    const numericId = parseInt(taskId, 10);
-    fetch('/MWD/demo/index.php?page=delete', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({id: numericId})
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                message.innerHTML = `Tache supprimee`;
-                message.style.display = 'block';
-                message.style.color = 'white';
-                message.style.fontWeight = 'bold';
-                message.style.border = '1px solid #ffffff';
-                message.style.padding = '10px';
-                message.style.margin = '10px';
-                message.style.borderRadius = '10px';
-                message.style.textAlign = 'center';
-                message.style.width = '50%';
-                message.style.backgroundColor = '#bd3549';
-                message.style.display = 'flex';
-                window.location.reload();
-            } else if (data.error) {
-                console.error('Erreur:', data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Erreur:', error);
+selectors.taskItems.forEach(item => {
+    const id = item.getAttribute('data-id');
+    const description = item.querySelector('span').textContent;
+
+    item.addEventListener('click', () =>
+        taskManager.toggleStatus(id, description));
+
+    item.addEventListener('dblclick', () =>
+        taskManager.delete(id));
+});
+
+selectors.filterButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+        // Mise à jour des boutons
+        selectors.filterButtons.forEach(btn => {
+            btn.classList.remove('active');
+            btn.setAttribute('aria-selected', 'false');
         });
-}
+        e.target.classList.add('active');
+        e.target.setAttribute('aria-selected', 'true');
 
-function checkTaskDone(taskId,spanContent) {
-    const numericId = parseInt(taskId, 10);
-    fetch(`/MWD/demo/index.php?page=status`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({id: numericId})
-    })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-            if(data.status === 'DONE') {
-                message.innerHTML = `Tache ${spanContent} deja terminee`;
-                message.style.display = 'block';
-                message.style.color = 'white';
-                message.style.fontWeight = 'bold';
-                message.style.border = '1px solid #4A90E2';
-                message.style.padding = '10px';
-                message.style.margin = '10px';
-                message.style.borderRadius = '10px';
-                message.style.textAlign = 'center';
-                message.style.width = '50%';
-                message.style.backgroundColor = '#357ABD';
-                message.style.display = 'flex';
-            }else {
-
-                fetch('/MWD/demo/index.php?page=done', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({id: numericId})
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            message.innerHTML = `Tache ${spanContent} terminee`;
-                            message.style.display = 'block';
-                            message.style.color = 'white';
-                            message.style.fontWeight = 'bold';
-                            message.style.border = '1px solid #4A90E2';
-                            message.style.padding = '10px';
-                            message.style.margin = '10px';
-                            message.style.borderRadius = '10px';
-                            message.style.textAlign = 'center';
-                            message.style.width = '50%';
-                            message.style.backgroundColor = '#357ABD';
-                            message.style.display = 'flex';
-
-                        } else if (data.error) {
-                            console.error('Erreur:', data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erreur:', error);
-                    });
-            }
+        // Filtrage des tâches
+        const filter = e.target.dataset.filter;
+        selectors.taskItems.forEach(item => {
+            const isDone = item.classList.contains('task-done');
+            item.style.display = filter === 'all'
+            || (filter === 'active' && !isDone)
+            || (filter === 'done' && isDone)
+                ? 'flex' : 'none';
         });
-
-}
+    });
+});
