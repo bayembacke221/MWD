@@ -91,4 +91,12 @@ class TaskRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function verifieStatusTaskById(int $taskId): string
+    {
+        $query = "SELECT status FROM " . $this->table . " WHERE id = :id";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute(['id' => $taskId]);
+        return $stmt->fetchColumn();
+    }
+
 }

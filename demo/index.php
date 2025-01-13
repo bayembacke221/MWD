@@ -43,13 +43,48 @@ switch ($page) {
         $taskController->delete($_id);
         break;
     case 'done':
-        $taskController->done($_id);
+        try {
+            $json = file_get_contents('php://input');
+            $data = json_decode($json, true);
+
+            if (!isset($data['id']) || !is_numeric($data['id'])) {
+                throw new \InvalidArgumentException('ID invalide ou manquant');
+            }
+
+            $taskId = (int)$data['id'];
+            $taskController->done($taskId);
+        } catch (\Exception $e) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+            exit;
+        }
         break;
     case 'doneList':
         $taskController->doneList();
         break;
     case 'doingList':
         $taskController->doingList();
+        break;
+    case 'status':
+        try {
+            $json = file_get_contents('php://input');
+            $data = json_decode($json, true);
+
+            if (!isset($data['id']) || !is_numeric($data['id'])) {
+                throw new \InvalidArgumentException('ID invalide ou manquant');
+            }
+
+            $taskId = (int)$data['id'];
+            $taskController->verifieStatusTaskById($taskId);
+        } catch (\Exception $e) {
+            error_log('Error: ' . $e->getMessage());
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            exit;
+        }
         break;
     default:
         $taskController->index();

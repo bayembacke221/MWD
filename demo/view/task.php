@@ -17,26 +17,29 @@ $tasks = $tasks ?? [];
                     +
                 </span>
             </div>
+            <div class="message">
+
+            </div>
             <section class="task-list">
                 <?php
                 foreach ($tasks as $task) {
                     if ($task['status'] ==='TODO') {
                         ?>
-                        <div class="task">
+                        <div class="task-item" data-id="<?=$task['id']?>">
                             <i class="fa-solid fa-circle-info"></i>
                             <span><?= $task['description'] ?></span>
                         </div>
                         <?php
                     }elseif ($task['status'] ==='DONE') {
                         ?>
-                        <div class="task">
+                        <div class="task-item task-done" data-id="<?=$task['id']?>">
                             <i class="fa-solid fa-circle"></i>
                             <span><?= $task['description'] ?></span>
                         </div>
                         <?php
                     }else{
                         ?>
-                        <div class="task">
+                        <div class="task-item" data-id="<?=$task['id']?>">
                             <i class="fa-regular fa-circle"></i>
                             <span><?= $task['description'] ?></span>
                         </div>

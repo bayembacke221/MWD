@@ -47,4 +47,9 @@ class TaskService
         return $this->taskRepository->findAllTaskDoing();
     }
 
+    public function verifieStatusTaskById(int $taskId): string
+    {
+        return $this->taskRepository->verifieStatusTaskById($taskId);
+    }
+
 }
