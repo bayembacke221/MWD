@@ -33,8 +33,45 @@ taskitem.forEach(function(item) {
         checkTaskDone(item.getAttribute('data-id'), spanContent);
     });
 
+    item.addEventListener('dblclick', function() {
+        confirm('Voulez-vous vraiment supprimer cette tache ?') ? deleteTask(item.getAttribute('data-id')) : null;
+    });
+
 });
 
+function deleteTask(taskId) {
+    const numericId = parseInt(taskId, 10);
+    fetch('/MWD/demo/index.php?page=delete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({id: numericId})
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                message.innerHTML = `Tache supprimee`;
+                message.style.display = 'block';
+                message.style.color = 'white';
+                message.style.fontWeight = 'bold';
+                message.style.border = '1px solid #ffffff';
+                message.style.padding = '10px';
+                message.style.margin = '10px';
+                message.style.borderRadius = '10px';
+                message.style.textAlign = 'center';
+                message.style.width = '50%';
+                message.style.backgroundColor = '#bd3549';
+                message.style.display = 'flex';
+                window.location.reload();
+            } else if (data.error) {
+                console.error('Erreur:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+        });
+}
 
 function checkTaskDone(taskId,spanContent) {
     const numericId = parseInt(taskId, 10);

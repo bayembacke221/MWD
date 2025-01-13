@@ -40,7 +40,24 @@ switch ($page) {
 
         break;
     case 'delete':
-        $taskController->delete($_id);
+        try {
+            $json = file_get_contents('php://input');
+            $data = json_decode($json, true);
+
+            if (!isset($data['id']) || !is_numeric($data['id'])) {
+                throw new \InvalidArgumentException('ID invalide ou manquant');
+            }
+
+            $taskId = (int)$data['id'];
+            $taskController->delete($taskId);
+        } catch (\Exception $e) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], JSON_THROW_ON_ERROR);
+            exit;
+        }
         break;
     case 'done':
         try {
@@ -58,7 +75,7 @@ switch ($page) {
             echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage()
-            ]);
+            ], JSON_THROW_ON_ERROR);
             exit;
         }
         break;

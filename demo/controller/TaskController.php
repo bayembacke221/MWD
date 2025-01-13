@@ -50,8 +50,24 @@ class TaskController
     }
     public function delete(int $taskId)
     {
-        $this->taskService->delete($taskId);
-        header('Location: /');
+        if ($taskId <= 0) {
+            throw new \InvalidArgumentException('ID de tâche invalide');
+        }
+
+        try {
+            $success = $this->taskService->delete($taskId);
+
+            header('Content-Type: application/json');
+            echo json_encode(['success' => $success], JSON_THROW_ON_ERROR);
+            exit;
+        } catch (\Exception $e) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], JSON_THROW_ON_ERROR);
+            exit;
+        }
     }
     public function done(int $taskId): void
     {
