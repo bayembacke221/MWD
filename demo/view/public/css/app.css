@@ -1,0 +1,108 @@
+:root {
+    --color-primary: #4A90E2;      /* Bleu principal pour l'en-tête et les actions */
+    --color-secondary: #F5F5F5;    /* Gris clair pour le fond */
+    --color-accent: #2ECC71;       /* Vert pour les tâches complétées */
+    --color-text: #333333;         /* Gris foncé pour le texte */
+    --color-border: #DDDDDD;       /* Gris clair pour les bordures */
+    --color-hover: #357ABD;        /* Bleu foncé pour les survols */
+    --color-background: #FFFFFF;    /* Blanc pour le fond des cartes */
+}
+
+.main-content {
+    background-color: var(--color-background);
+    padding: 20px;
+    border: 1px solid var(--color-border);
+    width: 50%;
+    margin: auto;
+}
+
+.card {
+    background-color: var(--color-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    margin-bottom: 20px;
+    padding: 20px;
+}
+.card-header {
+    background-color: var(--color-primary);
+    color: var(--color-background);
+    border: 1px solid var(--color-background);
+    border-radius: 5px;
+    justify-content: center;
+}
+
+h2 {
+    margin-left: 10px;
+}
+
+.card-content {
+    color: var(--color-text);
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.card-content p {
+    margin: 0;
+}
+
+.task-bar {
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.task-bar label {
+    margin-right: 10px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input[type="text"] {
+    padding: 5px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    width: 50%;
+}
+.task-bar span {
+    padding: 5px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    background-color: var(--color-primary);
+    color: var(--color-background);
+}
+
+.task-bar span:hover {
+    background-color: var(--color-hover);
+    cursor: pointer;
+}
+
+.task-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.task-list .task {
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    margin-bottom: 10px;
+    padding: 10px;
+    display: block;
+    justify-content: space-between;
+}
+
+i{
+    color: var(--color-hover);
+}
+
+.activity-table-status {
+    background-color: var(--color-border);
+    border: 1px solid var(--color-background);
+    border-radius: 5px;
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+}
